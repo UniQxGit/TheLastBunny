@@ -1,6 +1,7 @@
 # TheLastBunny
 
 How to run
+1.
 ```
-1. python3 last_bunny.py
+python3 last_bunny.py
 ```
