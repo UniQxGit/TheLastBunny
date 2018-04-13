@@ -1,11 +1,9 @@
+#The grid for puzzle mechanic aspect of the game
 
 #needs: 
 import pygame
 from pygame.locals import *
 import random
-#import numpy as geek
-
-#constants
 
 #assets
 gems_path = "Assets/Gems/" #assuming inside this folder 4 images named like "Gem_x.jpg" where is x -> (1-4)

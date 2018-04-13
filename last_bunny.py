@@ -1,4 +1,4 @@
-#Rabids Uno
+# Last Bunny
 
 # Authors: 
 # John Lee - hyunmail94@csu.fullerton.edu
@@ -7,14 +7,6 @@
 import pygame
 from pygame.locals import *
 from puzzle_grid import Puzzle_grid 
-
-
-#display array
-def display_arr(arr = []):
-	for i in range(len(arr)):
-		for j in range(len(arr[0])):
-			print (arr[i][j], end = " ")
-		print ("")
 
 #setup
 pygame.init()
@@ -52,7 +44,7 @@ while (True):
 			#pressing left click on the mouse
 			if event.button == 1:
 
-				#check if shapes in grid was clicked
+				#check if a shape the in grid was clicked and pop em if it was
 				puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
 				puzzle_grid.draw_grid(0.1,0.1)
 
