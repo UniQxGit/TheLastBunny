@@ -19,6 +19,8 @@ class Puzzle_grid:
 	screen_w = None
 	screen_h = None
 
+	collected_shapes = [0,0,0,0];
+
 	#UI variables
 	grid_rect = [[]] #array of rectangles for mouse clicking
 	whole_grid_rect = None #rectangle that encapsulates entire grid, for mouse clicking
@@ -43,6 +45,7 @@ class Puzzle_grid:
 		grid_h = grid_size[1]
 		self.shape_w = shape_size[0]
 		self.shape_h = shape_size[1]
+		self.collected_shapes = [0,0,0,0]
 
 		#Logic stuff: populate it with random (0->3)
 		self.grid = [ [ 0 for i in range(grid_w) ] for j in range(grid_h) ]
@@ -67,17 +70,17 @@ class Puzzle_grid:
 				self.grid[i][j] = random.randint(1,4)
 
 	#percent_w, percent_h is the position offsetted from game screen
-	def draw_grid(self, percent_w, percent_h):
+	def draw_grid(self, x, y):
 
 		#save these for updating the image
-		self.percent_w = percent_w
-		self.percent_h = percent_h
+		self.percent_w = x
+		self.percent_h = y
 
 		#grid size will be determined by the shape size
 		shape_w = self.shape_w
 		shape_h = self.shape_h
 		grid_size = (len(self.grid[0])  * shape_w, len(self.grid)* shape_h)
-		grid_pos = (self.screen_w * percent_w, self.screen_h * percent_h)
+		grid_pos = (x, y)
 
 		#setup collision detection for grid as a whole
 		self.whole_grid_rect = pygame.Rect(grid_pos, grid_size)
@@ -93,7 +96,7 @@ class Puzzle_grid:
 	#draw a shape (will draw multiple of these to draw grid)
 	def draw_shape (self, size_w, size_h, shape_value):
 		size = (size_w, size_h)
-		shape_image = pygame.image.load(gems_path + "Gem_" + str(shape_value) + ".jpg")
+		shape_image = pygame.image.load(gems_path + "Gem_" + str(shape_value) + ".png").convert_alpha()
 		shape_image = pygame.transform.scale(shape_image, size)
 		return shape_image
 
@@ -122,7 +125,7 @@ class Puzzle_grid:
 		shape_value = self.grid[col][row]
 		#we're gonna mark everything we want to pop to 0
 		self.grid[col][row] = 0	#pop the actual clicked shape at the very least
-
+		self.collected_shapes[shape_value-1] += 1
 		#look up
 		keep_going_up = True
 		counter = 1
@@ -131,6 +134,7 @@ class Puzzle_grid:
 			in_bounds = (shape_to_check >= 0)
 			if (in_bounds and shape_value == self.grid[shape_to_check][row]):
 				print ("\tsame shape upwards " + self.shape_to_string(shape_to_check, row))
+				self.collected_shapes[shape_value-1]+=1
 				self.grid[shape_to_check][row] = 0
 			else:
 				keep_going_up = False
@@ -144,6 +148,7 @@ class Puzzle_grid:
 			in_bounds = (shape_to_check < len(self.grid_rect))
 			if (in_bounds and shape_value == self.grid[shape_to_check][row]):
 				print ("\tsame shape downwards " + self.shape_to_string(shape_to_check, row))
+				self.collected_shapes[shape_value-1]+=1
 				self.grid[shape_to_check][row] = 0
 			else:
 				keep_going_down = False
@@ -157,6 +162,7 @@ class Puzzle_grid:
 			in_bounds = (shape_to_check >= 0)
 			if (in_bounds and shape_value == self.grid[col][shape_to_check]):
 				print ("\tsame shape upwards " + self.shape_to_string(col, shape_to_check))
+				self.collected_shapes[shape_value-1]+=1
 				self.grid[col][shape_to_check] = 0
 			else:
 				keep_going_left = False
@@ -170,11 +176,11 @@ class Puzzle_grid:
 			in_bounds = (shape_to_check < len(self.grid_rect[0]))
 			if (in_bounds and shape_value == self.grid[col][shape_to_check]):
 				print ("\tsame shape upwards " + self.shape_to_string(col, shape_to_check))
+				self.collected_shapes[shape_value-1]+=1
 				self.grid[col][shape_to_check] = 0
 			else:
 				keep_going_right = False
 			counter += 1
-
 		print (" ")
 
 	#check entire grid by columns
@@ -228,8 +234,6 @@ class Puzzle_grid:
 			self.clicked_a_shape = False
 			return True
 		return False
-
-
 
 
 
