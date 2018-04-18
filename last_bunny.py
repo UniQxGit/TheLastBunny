@@ -33,7 +33,7 @@ skill_icon_large_2 = pygame.image.load("Assets/InGame/SkillIcon_2.png").convert_
 skill_icon_large_3 = pygame.image.load("Assets/InGame/SkillIcon_3.png").convert_alpha()
 skill_icon_large_4 = pygame.image.load("Assets/InGame/SkillIcon_4.png").convert_alpha()
 
-#SkillIcons (Large)
+#SkillIcons (small)
 skill_icon_small_1 = pygame.image.load("Assets/InGame/Skillicon_small_1.png").convert_alpha()
 skill_icon_small_2 = pygame.image.load("Assets/InGame/Skillicon_small_2.png").convert_alpha()
 skill_icon_small_3 = pygame.image.load("Assets/InGame/Skillicon_small_3.png").convert_alpha()
@@ -41,7 +41,13 @@ skill_icon_small_4 = pygame.image.load("Assets/InGame/Skillicon_small_4.png").co
 
 battle_menu = pygame.image.load("Assets/InGame/battle_menu.png").convert_alpha();
 
+#status bars
+status_player = pygame.image.load("Assets/InGame/status_bunny.png").convert_alpha()
+status_enemy_skel = pygame.image.load("Assets/InGame/enemy_status_skel.png").convert_alpha()
+
+#fonts
 bit_8_font = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 13)
+bit_8_font_status = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 7)
 double_bubble_font = pygame.font.Font("Assets/Fonts/Double_Bubble_shadow.otf", 25)
 
 
@@ -53,6 +59,7 @@ while (True):
 	#if Level 1
 	screen.blit(bg ,(0,0))
 	
+	#Puzzle Assets
 	screen.blit(skill_icon_large_1 ,(690,19))
 	skill_text = double_bubble_font.render(str(puzzle_grid.collected_shapes[0]), False, (255, 255, 255))
 	screen.blit(skill_text,(770, 100))
@@ -69,7 +76,7 @@ while (True):
 	skill_text = double_bubble_font.render(str(puzzle_grid.collected_shapes[3]), False, (255, 255, 255))
 	screen.blit(skill_text,(1070+50*3, 100))
 
-
+	#BattleMenu Assets
 	screen.blit(battle_menu , (280,550))
 
 	screen.blit(skill_icon_small_1 ,(315,560))
@@ -89,7 +96,21 @@ while (True):
 	screen.blit(skill_text,(360, 575+37*3))
 
 
-	puzzle_grid.draw_grid(710, 133) 	
+	screen.blit(status_player,(350,7))
+	health_text = bit_8_font.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
+	screen.blit(health_text,(460, 50))
+
+	screen.blit(status_enemy_skel,(0,480))
+	health_text = bit_8_font_status.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
+	screen.blit(health_text,(75, 520))
+
+	screen.blit(status_enemy_skel,(0,560))
+	health_text = bit_8_font_status.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
+	screen.blit(health_text,(75, 600))
+
+	screen.blit(status_enemy_skel,(0,640))
+	health_text = bit_8_font_status.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
+	screen.blit(health_text,(75, 680))
 
 
 	#time right now (used for delaying stuff)
@@ -116,8 +137,9 @@ while (True):
 	#delaying "animations" for grid
 	if (puzzle_grid.delay_done(now)):
 		puzzle_grid.make_shapes_fall()
-		puzzle_grid.draw_grid(710,133)
 	
+	puzzle_grid.draw_grid(710,133)
+
 	pygame.display.update()
 
 
