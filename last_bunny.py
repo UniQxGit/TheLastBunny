@@ -7,6 +7,7 @@
 import pygame
 from pygame.locals import *
 from puzzle_grid import Puzzle_grid 
+from sprites import *
 import math
 
 #setup
@@ -50,7 +51,25 @@ bit_8_font = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 13)
 bit_8_font_status = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 7)
 double_bubble_font = pygame.font.Font("Assets/Fonts/Double_Bubble_shadow.otf", 25)
 
+#Load level
+level = pygame.image.load("Assets/InGame/Levels_01.png").convert_alpha();
 
+#Load Animations
+#bunny
+bunny_animation = Animation("bunny","idle",2)
+bunny_animation.add_anim("attack",12)
+bunny_animation.add_anim("attacked",4)
+bunny_animation.add_anim("die",4)
+
+#skeleton
+skeleton_animation = Animation("skel","idle",11)
+skeleton_animation.add_anim("attack",18)
+skeleton_animation.add_anim("attacked",8)
+skeleton_animation.add_anim("die",15)
+
+#load Sprites
+bunny = Sprite(bunny_animation,"Bunny")
+skeleton = Sprite(skeleton_animation,"Skeleton")
 
 #game loop
 while (True):
@@ -112,6 +131,17 @@ while (True):
 	health_text = bit_8_font_status.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
 	screen.blit(health_text,(75, 680))
 
+	#Level
+	screen.blit(level,(133,180))
+
+	#draw bunny at (395,240)
+	bunny.draw(screen,(415,230))
+	skeleton.draw(screen,(180,370))
+	skeleton.draw(screen,(220,370))
+	skeleton.draw(screen,(240,370))
+	skeleton.draw(screen,(180,390))
+	skeleton.draw(screen,(220,390))
+	skeleton.draw(screen,(240,390))
 
 	#time right now (used for delaying stuff)
 	now = pygame.time.get_ticks()
