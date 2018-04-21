@@ -69,7 +69,16 @@ skeleton_animation.add_anim("die",15)
 
 #load Sprites
 bunny = Sprite(bunny_animation,"Bunny")
-skeleton = Sprite(skeleton_animation,"Skeleton")
+skeleton1 = Sprite(skeleton_animation,"Skeleton1")
+skeleton2 = Sprite(skeleton_animation,"Skeleton2")
+skeleton3 = Sprite(skeleton_animation,"Skeleton3")
+skeleton4 = Sprite(skeleton_animation,"Skeleton4")
+skeleton5 = Sprite(skeleton_animation,"Skeleton5")
+skeleton6 = Sprite(skeleton_animation,"Skeleton6")
+
+#Test. To Make sure functions are called just once in the loop.
+called1 = False
+called2 = False
 
 #game loop
 while (True):
@@ -136,15 +145,27 @@ while (True):
 
 	#draw bunny at (395,240)
 	bunny.draw(screen,(415,230))
-	skeleton.draw(screen,(180,370))
-	skeleton.draw(screen,(220,370))
-	skeleton.draw(screen,(240,370))
-	skeleton.draw(screen,(180,390))
-	skeleton.draw(screen,(220,390))
-	skeleton.draw(screen,(240,390))
+	skeleton1.draw(screen,(180,370))
+	skeleton2.draw(screen,(220,370))
+	skeleton3.draw(screen,(240,370))
+	skeleton4.draw(screen,(180,390))
+	skeleton5.draw(screen,(220,390))
+	skeleton6.draw(screen,(240,390))
 
 	#time right now (used for delaying stuff)
 	now = pygame.time.get_ticks()
+
+	#Test animation play calls
+	if now > 5000 and called1 == False:
+		skeleton1.play("attack",3)
+		bunny.play("attack",3)
+		called1 = True
+
+	if now > 10000 and called2 == False and skeleton2.is_playing == False:
+		skeleton2.return_to_default = False
+		skeleton2.play("die",1)
+		skeleton6.play("attack",3)
+		called2 = True
 
 	#check user input
 	for event in pygame.event.get():
@@ -162,7 +183,6 @@ while (True):
 
 				#check if a shape the in grid was clicked and pop em if it was
 				puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
-				puzzle_grid.draw_grid(710,133)
 
 	#delay after a shape click
 	if (puzzle_grid.delay_done(now)):
