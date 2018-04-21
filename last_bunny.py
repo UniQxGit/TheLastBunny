@@ -134,8 +134,12 @@ while (True):
 				puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
 				puzzle_grid.draw_grid(710,133)
 
-	#delaying "animations" for grid
+	#delay after a shape click
 	if (puzzle_grid.delay_done(now)):
+		puzzle_grid.make_shapes_fall()
+
+	#delay for shapes falling
+	if (puzzle_grid.falling_done(now)):
 		puzzle_grid.make_shapes_fall()
 	
 	puzzle_grid.draw_grid(710,133)

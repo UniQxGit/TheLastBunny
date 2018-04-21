@@ -32,7 +32,12 @@ class Puzzle_grid:
 	#For "animations"
 	clicked_a_shape = False
 	time_shape_clicked = None
-	animation_delay = 300
+	click_delay = 200
+
+	#for make_shapes_fall_2() "animations"
+	shapes_still_falling = True
+	time_a_shape_fell = None
+	fall_delay = 30
 
 	def __init__(self, name, grid_size, shape_size, screen, screen_w, screen_h):
 		self.name = name
@@ -118,7 +123,7 @@ class Puzzle_grid:
 
 	#algorithm for popping the shapes around the shape clicked
 	#accepts coordinates (row,col) of shape clicked
-	#look only vertical and horizontal straight up
+	#look only vertical and horizontal straight up and then recursively do it the matched shapes
 	def pop_shapes (self, row, col):
 		print ("clicked shape at " + self.shape_to_string(col, row))
 
@@ -126,6 +131,7 @@ class Puzzle_grid:
 		#we're gonna mark everything we want to pop to 0
 		self.grid[col][row] = 0	#pop the actual clicked shape at the very least
 		self.collected_shapes[shape_value-1] += 1
+
 		#look up
 		keep_going_up = True
 		counter = 1
@@ -133,8 +139,7 @@ class Puzzle_grid:
 			shape_to_check = col - counter
 			in_bounds = (shape_to_check >= 0)
 			if (in_bounds and shape_value == self.grid[shape_to_check][row]):
-				print ("\tsame shape upwards " + self.shape_to_string(shape_to_check, row))
-				self.collected_shapes[shape_value-1]+=1
+				self.pop_shapes(row, shape_to_check) #recursive!
 				self.grid[shape_to_check][row] = 0
 			else:
 				keep_going_up = False
@@ -147,8 +152,7 @@ class Puzzle_grid:
 			shape_to_check = col + counter
 			in_bounds = (shape_to_check < len(self.grid_rect))
 			if (in_bounds and shape_value == self.grid[shape_to_check][row]):
-				print ("\tsame shape downwards " + self.shape_to_string(shape_to_check, row))
-				self.collected_shapes[shape_value-1]+=1
+				self.pop_shapes(row, shape_to_check) #recursive!
 				self.grid[shape_to_check][row] = 0
 			else:
 				keep_going_down = False
@@ -161,8 +165,7 @@ class Puzzle_grid:
 			shape_to_check = row - counter
 			in_bounds = (shape_to_check >= 0)
 			if (in_bounds and shape_value == self.grid[col][shape_to_check]):
-				print ("\tsame shape upwards " + self.shape_to_string(col, shape_to_check))
-				self.collected_shapes[shape_value-1]+=1
+				self.pop_shapes(shape_to_check, col) #recursive!
 				self.grid[col][shape_to_check] = 0
 			else:
 				keep_going_left = False
@@ -175,67 +178,76 @@ class Puzzle_grid:
 			shape_to_check = row + counter
 			in_bounds = (shape_to_check < len(self.grid_rect[0]))
 			if (in_bounds and shape_value == self.grid[col][shape_to_check]):
-				print ("\tsame shape upwards " + self.shape_to_string(col, shape_to_check))
-				self.collected_shapes[shape_value-1]+=1
+				self.pop_shapes(shape_to_check, col) #recursive!
 				self.grid[col][shape_to_check] = 0
 			else:
 				keep_going_right = False
 			counter += 1
-		print (" ")
 
-	#check entire grid by columns
-	#remove 0's, drop everything above it down, generate new shapes at the very top
+	#find the zero's(empty spaces) and replace them with the shape above it
+	#if at the very top and we find a zero, generate a random shape
+	#usage: run this until no more empty spaces in grid
+	#this version is intended to make the falling animation more apparent (a little more costly)
 	def make_shapes_fall(self):
-		#check grid from bottom to top then left to right
-		#so, we'd start [max_col][0] -> [max_col-1][0] ... [max_col][1] -> [max_col-1][1]
+
 		max_col = len(self.grid_rect)
 		max_row = len(self.grid_rect[0])
-		for i in range(max_row): #row
-			for j in range(max_col):#col
 
-				#start from bottom
-				curr_col = max_col-j-1
-				
+		#assume no zero found
+		zero_was_found = False
+		for i in range(max_col): #row
+			for j in range(max_row): #col
+
+				#start from the bottom
+				curr_col = max_col-i-1
+
 				#did we find a zero? (empty space)
-				if (self.grid[curr_col][i] == 0):
+				if (self.grid[curr_col][j] == 0):
+					zero_was_found = True
 					found_zero = True
 				else:
 					found_zero = False
 
 				#have we reached the edge?
 				counter = 0
-				if (curr_col - counter == -1):
+				if (curr_col == 0):
 					reached_the_edge = True
 				else:
 					reached_the_edge = False
 
-				#if found zero keep going up until we find a non-zero shape value or hit the edge
-				while (found_zero and not reached_the_edge):
-					counter += 1
-					reached_the_edge = curr_col - counter == -1
-					found_zero = self.grid[curr_col - counter][i] == 0
-					
-				#if we found a shape, drop it all the way down
-				if (self.grid[curr_col][i] == 0 and not reached_the_edge):
-					self.grid[curr_col][i] = self.grid[curr_col - counter][i]
-					self.grid[curr_col - counter][i] = 0
+				#if found zero, make shape above it fall
+				if (found_zero and not reached_the_edge):
+					shape_above = self.grid[curr_col - 1][j]
+					self.grid[curr_col][j] = shape_above
+					self.grid[curr_col - 1][j] = 0
+				#if found zero and we're at the top, generate a random shape
+				elif (found_zero and reached_the_edge):
+					random_shape = random.randint(1,4)
+					self.grid[curr_col][j] = random_shape
 
-		#repopulate 0's with new random shapes
-		for i in range(max_col):
-			for j in range(max_row):
-				if (self.grid[i][j] == 0):
-					self.grid[i][j] = random.randint(1,4)
-
+		#falling delay
+		self.time_a_shape_fell = pygame.time.get_ticks()
+		if (zero_was_found):
+			self.shapes_still_falling = True
+		else:
+			self.shapes_still_falling = False
 
 	#returns true after "animation delay" milliseconds has passed after detect_shape_click() was called
 	#usage: make shapes fall after certain amount of seconds
 	def delay_done(self, time_now):
-		if (self.clicked_a_shape and (time_now - self.time_shape_clicked >= self.animation_delay)):
+		if (self.clicked_a_shape and (time_now - self.time_shape_clicked >= self.click_delay)):
 			self.clicked_a_shape = False
 			return True
 		return False
 
 
+	def falling_done(self, time_now):
+		if (self.time_a_shape_fell == None):
+			return True
+
+		if (self.shapes_still_falling and (time_now - self.time_a_shape_fell >= self.fall_delay)):
+			return True
+		return False
 
 
 
