@@ -5,9 +5,15 @@ import pygame
 from pygame.locals import *
 import random
 
-#assets
-gems_path = "Assets/Gems/" #assuming inside this folder 4 images named like "Gem_x.jpg" where is x -> (1-4)
+#assets:
+gem_image = [None,None,None,None,None] 
 
+#for skill icons
+double_bubble_font = None
+skill_icon_large_1 = None
+skill_icon_large_2 = None
+skill_icon_large_3 = None
+skill_icon_large_4 = None
 
 class Puzzle_grid:
 	#logic variables
@@ -43,6 +49,7 @@ class Puzzle_grid:
 		self.name = name
 
 		#UI stuff
+		self.load_assets()
 		self.game_screen = screen
 		self.screen_w = screen_w
 		self.screen_h = screen_h
@@ -56,6 +63,25 @@ class Puzzle_grid:
 		self.grid = [ [ 0 for i in range(grid_w) ] for j in range(grid_h) ]
 		self.grid_rect = [ [ 0 for i in range(grid_w) ] for j in range(grid_h) ]
 		self.populate_grid()
+
+	def load_assets(self):
+		global double_bubble_font
+		global skill_icon_large_1, skill_icon_large_2, skill_icon_large_3, skill_icon_large_4
+		global gem_image
+
+		#for skill icons
+		double_bubble_font = pygame.font.Font("Assets/Fonts/Double_Bubble_shadow.otf", 25)
+		skill_icon_large_1 = pygame.image.load("Assets/InGame/SkillIcon_1.png").convert_alpha()
+		skill_icon_large_2 = pygame.image.load("Assets/InGame/SkillIcon_2.png").convert_alpha()
+		skill_icon_large_3 = pygame.image.load("Assets/InGame/SkillIcon_3.png").convert_alpha()
+		skill_icon_large_4 = pygame.image.load("Assets/InGame/SkillIcon_4.png").convert_alpha()
+
+		#for gem(aka shapes) images
+		gem_image[0] = pygame.image.load("Assets/Gems/Gem_0.png").convert_alpha()
+		gem_image[1] = pygame.image.load("Assets/Gems/Gem_1.png").convert_alpha()
+		gem_image[2] = pygame.image.load("Assets/Gems/Gem_2.png").convert_alpha()
+		gem_image[3] = pygame.image.load("Assets/Gems/Gem_3.png").convert_alpha()
+		gem_image[4] = pygame.image.load("Assets/Gems/Gem_4.png").convert_alpha()
 
 	def show_grid(self):
 		print ("Puzzle Grid: " + self.name)
@@ -90,6 +116,23 @@ class Puzzle_grid:
 		#setup collision detection for grid as a whole
 		self.whole_grid_rect = pygame.Rect(grid_pos, grid_size)
 
+		#draw shape count at the top
+		self.game_screen.blit(skill_icon_large_1 ,(690,19))
+		skill_text = double_bubble_font.render(str(self.collected_shapes[0]), False, (255, 255, 255))
+		self.game_screen.blit(skill_text,(770, 100))
+
+		self.game_screen.blit(skill_icon_large_2 ,(790+50*1,19))
+		skill_text = double_bubble_font.render(str(self.collected_shapes[1]), False, (255, 255, 255))
+		self.game_screen.blit(skill_text,(870+50*1, 100))
+
+		self.game_screen.blit(skill_icon_large_3 ,(890+50*2,19))
+		skill_text = double_bubble_font.render(str(self.collected_shapes[2]), False, (255, 255, 255))
+		self.game_screen.blit(skill_text,(970+50*2, 100))
+
+		self.game_screen.blit(skill_icon_large_4 ,(990+50*3,19))
+		skill_text = double_bubble_font.render(str(self.collected_shapes[3]), False, (255, 255, 255))
+		self.game_screen.blit(skill_text,(1070+50*3, 100))
+
 		#draw the shapes
 		for i in range(len(self.grid)):
 			for j in range(len(self.grid[0])):
@@ -101,8 +144,7 @@ class Puzzle_grid:
 	#draw a shape (will draw multiple of these to draw grid)
 	def draw_shape (self, size_w, size_h, shape_value):
 		size = (size_w, size_h)
-		shape_image = pygame.image.load(gems_path + "Gem_" + str(shape_value) + ".png").convert_alpha()
-		shape_image = pygame.transform.scale(shape_image, size)
+		shape_image = pygame.transform.scale(gem_image[shape_value], size)
 		return shape_image
 
 	#see if user clicked on grid, and find out which shape was clicked

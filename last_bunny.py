@@ -6,33 +6,18 @@
 
 import pygame
 from pygame.locals import *
-from puzzle_grid import Puzzle_grid 
+from puzzle_grid import Puzzle_grid #puzzle_grid.py
+from character import * #character.py
 import math
 
-#setup
+#pygame setup
 pygame.init()
 pygame.display.set_caption("The Last Bunny")
 bg = pygame.image.load("Assets/InGame/Level_1.png")
 screen = pygame.display.set_mode(bg.get_rect().size)
 w, h = pygame.display.get_surface().get_size()
 
-#create grid
-grid_size = (8, 9)
-shape_size = (63, 65)
-puzzle_grid = Puzzle_grid("Grid #1", grid_size, shape_size, screen, w, h)
-puzzle_grid.draw_grid(0.7, 0.1) 
-
-#for testing
-puzzle_grid.show_grid() #draws grid on terminal
-
-#LevelAssets
-
-#SkillIcons (Large)
-skill_icon_large_1 = pygame.image.load("Assets/InGame/SkillIcon_1.png").convert_alpha()
-skill_icon_large_2 = pygame.image.load("Assets/InGame/SkillIcon_2.png").convert_alpha()
-skill_icon_large_3 = pygame.image.load("Assets/InGame/SkillIcon_3.png").convert_alpha()
-skill_icon_large_4 = pygame.image.load("Assets/InGame/SkillIcon_4.png").convert_alpha()
-
+#-----LevelAssets-----
 #SkillIcons (small)
 skill_icon_small_1 = pygame.image.load("Assets/InGame/Skillicon_small_1.png").convert_alpha()
 skill_icon_small_2 = pygame.image.load("Assets/InGame/Skillicon_small_2.png").convert_alpha()
@@ -50,31 +35,46 @@ bit_8_font = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 13)
 bit_8_font_status = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 7)
 double_bubble_font = pygame.font.Font("Assets/Fonts/Double_Bubble_shadow.otf", 25)
 
+#-----game setup-----
+#create grid
+grid_size = (8, 9)
+shape_size = (63, 65)
+puzzle_grid = Puzzle_grid("Grid #1", grid_size, shape_size, screen, w, h)
+puzzle_grid.draw_grid(710, 133) 
 
+#create character (bunny)
+main_bunny = Character(screen, "The last bunny", puzzle_grid, 100)
+#create dummy enemy
+enemy_1 = Character(screen, "skeleton_1", None, 50)
+enemy_2 = Character(screen, "skeleton_2", None, 50)
+enemy_3 = Character(screen, "skeleton_3", None, 50)
+
+#update UI, this will be called at the end part of the game loop
+def update_UI():
+	#update status bar UI for all characters
+	global main_bunny
+	global enemy_1
+	main_bunny.status_bar_UI(status_player, (350,7), bit_8_font, (460, 50))
+	enemy_1.status_bar_UI(status_enemy_skel, (0, 480), bit_8_font_status, (75, 520))
+	enemy_2.status_bar_UI(status_enemy_skel, (0, 560), bit_8_font_status, (75, 600))
+	enemy_3.status_bar_UI(status_enemy_skel, (0, 640), bit_8_font_status, (75, 680))
+
+	#update the grid
+	global puzzle_grid
+	puzzle_grid.draw_grid(710,133)
+
+#turn taking
+turn_rotation = [main_bunny, enemy_1, enemy_2, enemy_3]
+character_num = 4
+rotation_counter = 4
+active_character = turn_rotation[rotation_counter % character_num]
 
 #game loop
 while (True):
 	#Draw UI
 	
 	#if Level 1
-	screen.blit(bg ,(0,0))
-	
-	#Puzzle Assets
-	screen.blit(skill_icon_large_1 ,(690,19))
-	skill_text = double_bubble_font.render(str(puzzle_grid.collected_shapes[0]), False, (255, 255, 255))
-	screen.blit(skill_text,(770, 100))
-
-	screen.blit(skill_icon_large_2 ,(790+50*1,19))
-	skill_text = double_bubble_font.render(str(puzzle_grid.collected_shapes[1]), False, (255, 255, 255))
-	screen.blit(skill_text,(870+50*1, 100))
-
-	screen.blit(skill_icon_large_3 ,(890+50*2,19))
-	skill_text = double_bubble_font.render(str(puzzle_grid.collected_shapes[2]), False, (255, 255, 255))
-	screen.blit(skill_text,(970+50*2, 100))
-
-	screen.blit(skill_icon_large_4 ,(990+50*3,19))
-	skill_text = double_bubble_font.render(str(puzzle_grid.collected_shapes[3]), False, (255, 255, 255))
-	screen.blit(skill_text,(1070+50*3, 100))
+	screen.blit(bg ,(0,0)) #redraw background
 
 	#BattleMenu Assets
 	screen.blit(battle_menu , (280,550))
@@ -96,23 +96,6 @@ while (True):
 	screen.blit(skill_text,(360, 575+37*3))
 
 
-	screen.blit(status_player,(350,7))
-	health_text = bit_8_font.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
-	screen.blit(health_text,(460, 50))
-
-	screen.blit(status_enemy_skel,(0,480))
-	health_text = bit_8_font_status.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
-	screen.blit(health_text,(75, 520))
-
-	screen.blit(status_enemy_skel,(0,560))
-	health_text = bit_8_font_status.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
-	screen.blit(health_text,(75, 600))
-
-	screen.blit(status_enemy_skel,(0,640))
-	health_text = bit_8_font_status.render(str(100) + "%", False, (255, 255, 255)) #value should be pulled from a class variable
-	screen.blit(health_text,(75, 680))
-
-
 	#time right now (used for delaying stuff)
 	now = pygame.time.get_ticks()
 
@@ -131,8 +114,23 @@ while (True):
 			if event.button == 1:
 
 				#check if a shape the in grid was clicked and pop em if it was
-				puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
-				puzzle_grid.draw_grid(710,133)
+				if (active_character == main_bunny):
+					puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
+
+					#TESTING ATTACK (remove this later)
+					main_bunny.attack(enemy_1, skill_1)
+					rotation_counter += 1
+					active_character = turn_rotation[rotation_counter % character_num]
+
+	#AI moves
+	if (active_character != main_bunny):
+		#attack if still alive
+		if (active_character.health > 0):
+			active_character.attack(main_bunny, AI_skill_1) 
+
+		#next person's turn
+		rotation_counter += 1
+		active_character = turn_rotation[rotation_counter % character_num]
 
 	#delay after a shape click
 	if (puzzle_grid.delay_done(now)):
@@ -142,7 +140,8 @@ while (True):
 	if (puzzle_grid.falling_done(now)):
 		puzzle_grid.make_shapes_fall()
 	
-	puzzle_grid.draw_grid(710,133)
+	#update screen
+	update_UI()
 
 	pygame.display.update()
 
