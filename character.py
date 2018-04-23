@@ -1,27 +1,25 @@
 #The character that battles in the game
-#also contains the skill definitions used by characters in the game
 
 #needs: (empty)
+import pygame
+from pygame.locals import *
 
 #assets: (empty)
 
-#Bunny skills, returns what happened (string)
-def skill_1(attacker, target):
-	attacker.puzzle_grid.collected_shapes[0] -= 1
-	target.health -= 20
-	return attacker.name + " used skill_1 on " + target.name + ", it dealt 20 damage and cost 1 red gem"
-
-#AI skills, returns what happened (string)
-def AI_skill_1(attacker, target):
-	target.health -= 14
-	return attacker.name + " hit " + target.name + " with a sword, it dealt 14 damage"
-
 #character class
 class Character:
-	def __init__(self, game_screen, name, puzzle_grid, health):
+	def __init__(self, game_screen, name, puzzle_grid, health, sprite, location):
 
 		#for UI
 		self.game_screen = game_screen
+
+		#for animations
+		self.location = location
+		self.sprite = sprite
+		self.started_attack_anim = False
+		self.attack_animation_time = 1000
+		self.current_action = None
+		self.current_target = None
 
 		#for logic
 		self.name = name
@@ -48,6 +46,11 @@ class Character:
 		self.status_bar_font_pos = font_pos
 		self.status_bar_font = font
 
+	#draw the sprite of the character on the screen
+	def draw_character(self):
+		self.sprite.draw(self.game_screen,self.location)
+
+	#show info of this character
 	def show_info(self):
 		print ("")
 		print ("----Character INFO----")
@@ -58,9 +61,35 @@ class Character:
 			print ("Gem score: " + str(self.puzzle_grid.collected_shapes)[1:-1])
 			self.puzzle_grid.show_grid()
 
+	#starts the attack animation and sets up delay before applying skill's effects to target
+	def start_attack(self, target, skill):
+		#play the attack animation
+		self.sprite.play("attack", 1)
+		self.started_attack_anim = True
+		self.time_started_attack = pygame.time.get_ticks()
+
+		#save the action
+		self.current_action = skill
+		self.current_target = target
+
+	#attack another player with a skill
 	def attack(self, target, skill):
+		#apply the effect of skill to target
 		skill_result = skill(self, target)
 		print (skill_result)
 		if (target.health <= 0):
 			print (target.name + " died")
+			target.sprite.play("die", 1)
+
+		#reset variables, character has completed it's action
+		self.current_action = None
+		self.current_target = None
+
+	#we want to wait for attack animation to finish before inflicting the damage
+	def attack_delay_done(self, time_now):
+		if (self.started_attack_anim and (time_now - self.time_started_attack >= self.attack_animation_time)):
+			self.started_attack_anim = False
+			return True
+		return False
+
 
