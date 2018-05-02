@@ -8,7 +8,7 @@ import random
 #assets:
 gem_image = [None,None,None,None,None] 
 
-#for skill icons
+#for skill icons (large)
 double_bubble_font = None
 skill_icon_large_1 = None
 skill_icon_large_2 = None
@@ -19,13 +19,17 @@ class Puzzle_grid:
 	#logic variables
 	name = "undefined"
 	grid = [[]] #this will contain values (1->4) to describe shape value (0 would be empty)
+	disable_grid = False
 
 	#so we can populate stuff on the screen
 	game_screen = None
 	screen_w = None
 	screen_h = None
 
-	collected_shapes = [0,0,0,0];
+	#Stuff we want to communicate to Character using this grid (character.py)
+	collected_shapes = [0,0,0,0]
+	move_picked = False
+	finished_grid_move = False
 
 	#UI variables
 	grid_rect = [[]] #array of rectangles for mouse clicking
@@ -58,10 +62,10 @@ class Puzzle_grid:
 		self.shape_w = shape_size[0]
 		self.shape_h = shape_size[1]
 		self.collected_shapes = [0,0,0,0]
+		self.grid_rect = [ [ 0 for i in range(grid_w) ] for j in range(grid_h) ]
 
 		#Logic stuff: populate it with random (0->3)
 		self.grid = [ [ 0 for i in range(grid_w) ] for j in range(grid_h) ]
-		self.grid_rect = [ [ 0 for i in range(grid_w) ] for j in range(grid_h) ]
 		self.populate_grid()
 
 	def load_assets(self):
@@ -150,17 +154,20 @@ class Puzzle_grid:
 	#see if user clicked on grid, and find out which shape was clicked
 	def detect_shape_click (self, mouse_posx, mouse_posy):
 
-		#for animation delay
-		self.clicked_a_shape = True
-		self.time_shape_clicked = pygame.time.get_ticks()
-
-		#check if click was within grid in the first place
-		if (self.whole_grid_rect.collidepoint(mouse_posx, mouse_posy)):
-			#check which shape was clicked
-			for i in range(len(self.grid_rect)):
-				for j in range(len(self.grid_rect[0])):
-					if (self.grid_rect[i][j].collidepoint(mouse_posx, mouse_posy)):
-						self.pop_shapes(j, i)
+		#prevent multiple clicks
+		if (self.disable_grid == False):
+			#check if click was within grid in the first place
+			if (self.whole_grid_rect.collidepoint(mouse_posx, mouse_posy)):
+				self.disable_grid = True
+				#check which shape was clicked
+				for i in range(len(self.grid_rect)):
+					for j in range(len(self.grid_rect[0])):
+						if (self.grid_rect[i][j].collidepoint(mouse_posx, mouse_posy)):
+							#for animation delay
+							self.clicked_a_shape = True
+							self.time_shape_clicked = pygame.time.get_ticks()
+							#pop em
+							self.pop_shapes(j, i)
 
 
 	#algorithm for popping the shapes around the shape clicked
@@ -273,17 +280,22 @@ class Puzzle_grid:
 			self.shapes_still_falling = True
 		else:
 			self.shapes_still_falling = False
+			if (self.move_picked):
+				self.move_picked = False
+				self.finished_grid_move = True
+				print("finished grid move, now pick a skill\n")
 
 	#returns true after "animation delay" milliseconds has passed after detect_shape_click() was called
 	#usage: make shapes fall after certain amount of seconds
 	def delay_done(self, time_now):
 		if (self.clicked_a_shape and (time_now - self.time_shape_clicked >= self.click_delay)):
+			self.move_picked = True
 			self.clicked_a_shape = False
 			return True
 		return False
 
 
-	def falling_done(self, time_now):
+	def one_space_fall_done(self, time_now):
 		if (self.time_a_shape_fell == None):
 			return True
 

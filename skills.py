@@ -4,7 +4,22 @@
 def skill_1(attacker, target):
 	attacker.puzzle_grid.collected_shapes[0] -= 1
 	target.health -= 20
-	return attacker.name + " used skill_1 on " + target.name + ", it dealt 20 damage and cost 1 red gem"
+	return attacker.name + " used avoid on " + target.name + ", it dealt 20 damage and cost 1 red gem"
+
+def skill_2(attacker, target):
+	attacker.puzzle_grid.collected_shapes[0] -= 1
+	target.health -= 20
+	return attacker.name + " used be cute on " + target.name + ", it dealt 20 damage and cost 1 red gem"
+
+def skill_3(attacker, target):
+	attacker.puzzle_grid.collected_shapes[0] -= 1
+	target.health -= 20
+	return attacker.name + " used scratch on " + target.name + ", it dealt 20 damage and cost 1 red gem"
+
+def skill_4(attacker, target):
+	attacker.puzzle_grid.collected_shapes[0] -= 1
+	target.health -= 20
+	return attacker.name + " used rage on " + target.name + ", it dealt 20 damage and cost 1 red gem"
 
 #AI skills, returns what happened (string)
 def AI_skill_1(attacker, target):

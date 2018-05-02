@@ -20,13 +20,6 @@ screen = pygame.display.set_mode(bg.get_rect().size)
 w, h = pygame.display.get_surface().get_size()
 
 #-----LevelAssets-----
-#SkillIcons (small)
-skill_icon_small_1 = pygame.image.load("Assets/InGame/Skillicon_small_1.png").convert_alpha()
-skill_icon_small_2 = pygame.image.load("Assets/InGame/Skillicon_small_2.png").convert_alpha()
-skill_icon_small_3 = pygame.image.load("Assets/InGame/Skillicon_small_3.png").convert_alpha()
-skill_icon_small_4 = pygame.image.load("Assets/InGame/Skillicon_small_4.png").convert_alpha()
-
-battle_menu = pygame.image.load("Assets/InGame/battle_menu.png").convert_alpha();
 
 #status bars
 status_player = pygame.image.load("Assets/InGame/status_bunny.png").convert_alpha()
@@ -66,6 +59,9 @@ skeleton6 = Sprite(skeleton_animation,"Skeleton6")
 called1 = False
 called2 = False
 
+#Test. blank white status bar for targeted character
+targeted_status_img = pygame.image.load("Assets/white.png").convert_alpha()
+
 #-----game setup-----
 #create grid
 grid_size = (8, 9)
@@ -79,16 +75,21 @@ main_bunny = Character(screen, "The last bunny", puzzle_grid, 100, bunny, (415,2
 enemy_1 = Character(screen, "skeleton_1", None, 50, skeleton1, (180,370))
 enemy_2 = Character(screen, "skeleton_2", None, 50, skeleton2, (220,370))
 enemy_3 = Character(screen, "skeleton_3", None, 50, skeleton3, (240,370))
+#setup specific UI
+main_bunny.setup_status_bar_UI(status_player, (350,7), bit_8_font, (460, 50), targeted_status_img)
+enemy_1.setup_status_bar_UI(status_enemy_skel, (0, 480), bit_8_font_status, (75, 520), targeted_status_img)
+enemy_2.setup_status_bar_UI(status_enemy_skel, (0, 560), bit_8_font_status, (75, 600), targeted_status_img)
+enemy_3.setup_status_bar_UI(status_enemy_skel, (0, 640), bit_8_font_status, (75, 680), targeted_status_img)
 
 #update the screen with the new changes, this will be called at the end part of the game loop
 def update_screen():
 	#update status bar UI for all characters
 	global main_bunny
 	global enemy_1
-	main_bunny.status_bar_UI(status_player, (350,7), bit_8_font, (460, 50))
-	enemy_1.status_bar_UI(status_enemy_skel, (0, 480), bit_8_font_status, (75, 520))
-	enemy_2.status_bar_UI(status_enemy_skel, (0, 560), bit_8_font_status, (75, 600))
-	enemy_3.status_bar_UI(status_enemy_skel, (0, 640), bit_8_font_status, (75, 680))
+	main_bunny.draw_status_bar()
+	enemy_1.draw_status_bar()
+	enemy_2.draw_status_bar()
+	enemy_3.draw_status_bar()
 
 	#update the grid
 	global puzzle_grid
@@ -100,12 +101,37 @@ def update_screen():
 	enemy_2.draw_character()
 	enemy_3.draw_character()
 
+	#update the skill battle menu
+	main_bunny.draw_skill_list()
+
 #turn taking
 turn_rotation = [main_bunny, enemy_1, enemy_2, enemy_3]
 character_num = 4
 rotation_counter = 4
 active_character = turn_rotation[rotation_counter % character_num] #this will go from 0 -> 4
 someone_is_attacking = False
+if (turn_rotation[0] == main_bunny):
+	can_click_grid = True
+else:
+	can_click_grid = False
+
+#target picking
+skill_picked = None
+targeted_character = None
+def pick_target (mouse_posx, mouse_posy):
+	global turn_rotation, targeted_character
+	found_target = False
+
+	for character in turn_rotation:
+		if (character.status_bar_rect.collidepoint(mouse_posx, mouse_posy)):
+			character.targeted = True
+			targeted_character = character
+			found_target = True
+		else:
+			character.targeted = False
+
+	if (found_target == False):
+		targeted_character = None
 
 #game loop
 while (True):
@@ -115,23 +141,6 @@ while (True):
 	screen.blit(bg ,(0,0)) #redraw background
 
 	#BattleMenu Assets
-	screen.blit(battle_menu , (280,550))
-
-	screen.blit(skill_icon_small_1 ,(315,560))
-	skill_text = bit_8_font.render("AVOID", False, (255, 255, 255))
-	screen.blit(skill_text,(360, 575))
-
-	screen.blit(skill_icon_small_2 ,(315,560+37*1))
-	skill_text = bit_8_font.render("BE CUTE", False, (255, 255, 255))
-	screen.blit(skill_text,(360, 575+37*1))
-
-	screen.blit(skill_icon_small_3 ,(315,560+37*2))
-	skill_text = bit_8_font.render("SCRATCH", False, (255, 255, 255))
-	screen.blit(skill_text,(360, 575+37*2))
-
-	screen.blit(skill_icon_small_4 ,(315,560+37*3))
-	skill_text = bit_8_font.render("RAGE!!!", False, (255, 255, 255))
-	screen.blit(skill_text,(360, 575+37*3))
 
 	#Level
 	screen.blit(level,(133,180))
@@ -171,19 +180,39 @@ while (True):
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			mouse_posx, mouse_posy = pygame.mouse.get_pos()
 
-			#check if a shape the in grid was clicked and pop em if it was
-			if event.button == 1 and active_character == main_bunny and someone_is_attacking == False:
-				puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
+			#possible improvement: can make this cleaner by checking detection first for skill picking
+			#check if it's our turn and no one is currently doing an attack animation
+			if (event.button == 1 and active_character == main_bunny and someone_is_attacking == False):
+				#step 1: click on grid
+				if main_bunny.puzzle_grid.finished_grid_move == False:
+					puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
 
-				#TESTING ATTACK (remove this later)
-				main_bunny.start_attack(enemy_1, skill_1)
-				someone_is_attacking = True
+				#step 3: click skill
+				if targeted_character != None:
+					skill_picked = main_bunny.detect_skill_click(targeted_character, mouse_posx, mouse_posy)
+
+					#start attack
+					if (skill_picked != None):
+						main_bunny.start_attack(targeted_character, skill_picked)
+
+						#reset values
+						someone_is_attacking = True
+						skill_picked = None
+						main_bunny.puzzle_grid.finished_grid_move = False
+						main_bunny.puzzle_grid.disable_grid = False
+						#clear targeting
+						targeted_character.targeted = False
+						targeted_character = None
+
+				#step 2: click target
+				if main_bunny.puzzle_grid.finished_grid_move == True and skill_picked == None:
+					pick_target(mouse_posx, mouse_posy)
 
 	#AI moves
 	if (active_character != main_bunny and someone_is_attacking == False):
 		if (active_character.health > 0):
 			#attack if still alive
-			active_character.show_info()
+			#active_character.show_info()
 			active_character.start_attack(main_bunny, AI_skill_1) 
 			someone_is_attacking = True
 		else:
@@ -197,7 +226,7 @@ while (True):
 		puzzle_grid.make_shapes_fall()
 
 	#delay for shapes falling
-	if (puzzle_grid.falling_done(now)):
+	if (puzzle_grid.one_space_fall_done(now)):
 		puzzle_grid.make_shapes_fall()
 
 	#delay finished after attack was made (for sprite animation)
