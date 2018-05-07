@@ -135,9 +135,9 @@ class Character:
 		#draw image
 		x_pos = self.status_image_pos[0]
 		y_pos = self.status_image_pos[1]
-		if (self.targeted == False):
-			self.game_screen.blit(self.status_image,(x_pos,y_pos))
-		else:
+		self.game_screen.blit(self.status_image,(x_pos,y_pos))
+		
+		if (self.targeted):
 			self.game_screen.blit(self.targeted_status_image,(x_pos,y_pos))
 
 		#draw text over the image
