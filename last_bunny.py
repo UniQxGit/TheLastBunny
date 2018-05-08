@@ -17,7 +17,7 @@ import time
 #pygame setup
 pygame.init()
 pygame.display.set_caption("The Last Bunny")
-screen = pygame.display.set_mode((1280,720))#,pygame.FULLSCREEN
+screen = pygame.display.set_mode((1280,720),pygame.FULLSCREEN)#,pygame.FULLSCREEN
 bg = [ Sprite.image(pygame.image.load("Assets/opening.png").convert(),"bg_0"),
 	Sprite.image(pygame.image.load("Assets/Story/bg_1.png").convert(),"bg_1"),
 	Sprite.image(pygame.image.load("Assets/InGame/Level_1.png").convert(),"bg_2")

@@ -149,9 +149,7 @@ class Sprite:
 				else:
 					self.play_index = len(self.anim.animations[self.current_animation]) - 1
 			index = self.play_index
-		print (self.name + " is playing" + self.current_animation)
 
-		print (index)
 		screen.blit(self.anim.animations[self.current_animation][index], position)
 		self.last_index = index
 		
@@ -185,7 +183,6 @@ class Sprite:
 				temp.blit(screen,(-self.position[0],-self.position[1]))
 				temp.blit(self.image,(0,0))
 				temp.set_alpha(alpha)	
-				print (alpha)
 			screen.blit(temp,self.position)
 			last_time = current_time
 			pygame.display.update()
@@ -217,7 +214,6 @@ class Sprite:
 			
 			if last_time != current_time:
 				alpha = math.ceil((elapsed_time/duration) * 255)
-				print (alpha)
 				temp.set_alpha(alpha)
 
 			screen.blit(temp,self.position)

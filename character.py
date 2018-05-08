@@ -216,6 +216,8 @@ class Character:
 		self.feedback_message = skill_result
 		if (target.health <= 0):
 			print (target.name + " died")
+			target.hide_after = True
+			target.return_to_default = False
 			target.sprite.play("die", 1)
 		print ("")
 
