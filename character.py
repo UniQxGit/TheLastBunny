@@ -123,16 +123,16 @@ class Character:
 
 		self.game_screen.blit(skill_icon_small_4 , icon_pos_4)
 		if (self.puzzle_grid.collected_shapes[3] >= self.skill_costs[3]):
-			skill_text_4 = bit_8_font.render("RAGE!!! (" + str(self.skill_costs[3]) + " - max)", False, (255, 255, 255))
+			skill_text_4 = bit_8_font.render("RAGE!!! (ALL GEMS. Minimum " + str(self.skill_costs[3]) + ")", False, (255, 255, 255))
 		else:
-			skill_text_4 = bit_8_font.render("RAGE!!! (" + str(self.skill_costs[3]) + " - max)", False, not_enough_resource_color)
+			skill_text_4 = bit_8_font.render("RAGE!!! (ALL GEMS. Minimum " + str(self.skill_costs[3]) + ")", False, not_enough_resource_color)
 		self.game_screen.blit(skill_text_4, text_pos_4)
 
 		#create collision box (can now click skill by its text)
-		self.skill_rects[0] = pygame.Rect(text_pos_1, skill_text_1.get_rect().size)
-		self.skill_rects[1] = pygame.Rect(text_pos_2, skill_text_2.get_rect().size)
-		self.skill_rects[2] = pygame.Rect(text_pos_3, skill_text_3.get_rect().size)
-		self.skill_rects[3] = pygame.Rect(text_pos_4, skill_text_4.get_rect().size)
+		self.skill_rects[0] = pygame.Rect((285,560), (309,38))
+		self.skill_rects[1] = pygame.Rect((285,560 + 38 * 1), (309,38))
+		self.skill_rects[2] = pygame.Rect((285,560 + 38 * 2), (309,38))
+		self.skill_rects[3] = pygame.Rect((285,560 + 38 * 3), (309,38))
 
 	#returns skill that was picked, returns None if no skill was picked
 	def detect_skill_click(self, target, mouse_posx, mouse_posy):
@@ -216,10 +216,9 @@ class Character:
 		self.feedback_message = skill_result
 		if (target.health <= 0):
 			print (target.name + " died")
-			target.hide_after = True
-			target.return_to_default = False
+			target.sprite.return_to_default = False
 			target.sprite.play("die", 1)
-		print ("")
+
 
 		#reset variables, character has completed it's action
 		self.current_action = None

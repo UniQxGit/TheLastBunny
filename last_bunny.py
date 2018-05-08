@@ -17,7 +17,7 @@ import time
 #pygame setup
 pygame.init()
 pygame.display.set_caption("The Last Bunny")
-screen = pygame.display.set_mode((1280,720),pygame.FULLSCREEN)#,pygame.FULLSCREEN
+screen = pygame.display.set_mode((1280,720))#,pygame.FULLSCREEN)
 bg = [ Sprite.image(pygame.image.load("Assets/opening.png").convert(),"bg_0"),
 	Sprite.image(pygame.image.load("Assets/Story/bg_1.png").convert(),"bg_1"),
 	Sprite.image(pygame.image.load("Assets/InGame/Level_1.png").convert(),"bg_2")
@@ -78,7 +78,8 @@ play_button = Sprite.image(pygame.image.load("Assets/Opening/play_button.png").c
 quit_button = Sprite.image(pygame.image.load("Assets/Opening/quit_button.png").convert_alpha(),"quit")
 dark_overlay = Sprite.image(pygame.image.load("Assets/Story/dark_overlay.png"),"play")
 black = Sprite.image(pygame.image.load("Assets/black.png").convert(),"black")
-
+battle_skill_overlay = Sprite.image(pygame.image.load("Assets/InGame/battle_skill_overlay.png").convert_alpha(),"Battle Menu")
+feedback_window = Sprite.image(pygame.image.load("Assets/InGame/Status_overlay.png").convert_alpha(),"feedback UI")
 #Test. To Make sure functions are called just once in the loop.
 called1 = False
 called2 = False
@@ -205,7 +206,7 @@ def switch_scene(scene):
 
 #update the screen with the new changes, this will be called at the end part of the game loop
 def update_screen():
-	global can_splash
+	global can_splash,screen
 	if which_scene == 0:
 		play_button.draw(screen,(450,315))
 		quit_button.draw(screen,(450,460))
@@ -218,7 +219,7 @@ def update_screen():
 		global enemy_1
 		global level 
 		#Level
-		screen.blit(level,(133,180))
+		screen.blit(level,(133,175))
 
 		main_bunny.draw_status_bar()
 		enemy_1.draw_status_bar()
@@ -234,7 +235,7 @@ def update_screen():
 		enemy_1.draw_character()
 		enemy_2.draw_character()
 		enemy_3.draw_character()
-
+		battle_skill_overlay.draw(screen,battle_skill_overlay.position)
 		#update the skill battle menu
 		main_bunny.draw_skill_list()
 
@@ -274,12 +275,31 @@ def pick_target (mouse_posx, mouse_posy):
 #text in a box UI, give the user messages on their actions
 feedback_message = "hello"
 def feedback_message_UI():
-	global feedback_message
+	global feedback_message,screen
 
-	text_feedback = bit_8_font.render(feedback_message, False, (255, 255, 255))
-	screen.blit(text_feedback, (0, 0))
+	feedback_window.draw(screen,(158,475))
 
+	font = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 10)
+	words = [word.split(' ') for word in feedback_message.splitlines()]  # 2D array where each row is a list of words.
+	space = font.size(' ')[0]  # The width of a space.
+	boundary = 20
+	max_width, max_height = feedback_window.rect.size
+	pos = (185, 490)
+	x, y = pos
 
+	for line in words:
+		for word in line:
+			word_surface = font.render(word, 0, (255, 255, 255))
+			word_width, word_height = word_surface.get_size()
+			if x + word_width >= pos[0]+(max_width - boundary) :
+				x = pos[0]  # Reset the x.
+				y += word_height  # Start on new row.
+			screen.blit(word_surface, (x, y))
+			x += word_width + space
+		x = pos[0]  # Reset the x.
+		y += word_height  # Start on new row.
+
+	
 # #game loop
 while (True):
 	start = time.time()
@@ -338,9 +358,21 @@ while (True):
 			pygame.quit()
 			exit()
 
+		mouse_posx, mouse_posy = pygame.mouse.get_pos()
+
+
+		if which_scene == 2:
+			battle_skill_overlay.position = (-battle_skill_overlay.rect.w,-battle_skill_overlay.rect.h)
+			if targeted_character != None:
+				for i in range(len(main_bunny.skill_rects)):
+					if (main_bunny.skill_rects[i].collidepoint(mouse_posx, mouse_posy)):
+						battle_skill_overlay.position = (main_bunny.skill_rects[i].x,main_bunny.skill_rects[i].y)
+
+
+
 		#mouse was clicked
 		if event.type == pygame.MOUSEBUTTONDOWN:
-			mouse_posx, mouse_posy = pygame.mouse.get_pos()
+			
 
 			#possible improvement: can make this cleaner by checking detection first for skill picking
 			#check if it's our turn and no one is currently doing an attack animation

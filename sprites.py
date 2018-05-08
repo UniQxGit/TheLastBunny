@@ -91,6 +91,8 @@ class Sprite:
 		sprite.rect = image.get_rect()
 		return sprite
 
+	def set_hidden(self, hide):
+		self.hide_after = hide
 
 	def draw(self,screen,position):
 		self.position = position
@@ -117,12 +119,13 @@ class Sprite:
 
 					if self.hide_after == True:
 						self.hidden = True
+						print (self.name + ": Hiding sprite")
 
-					
+					print (self.name + ": HideAfter(" + str(self.hide_after) + ")")
 					self.is_playing = False;
 					self.play_counter = 0
 					self.anim_started = False
-					print ("Done Playing. Returning to " + self.current_animation)
+					print (self.name + ": Done Playing. Returning to " + self.current_animation)
 				elif self.stopped == False:
 					self.anim_index = self.play_index
 
@@ -230,4 +233,4 @@ class Sprite:
 		self.hidden = False
 		self.current_animation = animation
 		self.play_index = 0
-		print ("Play " + animation + str(count) + " Times")
+		print (self.name + ": Play " + animation + str(count) + " Times")
