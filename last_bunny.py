@@ -32,7 +32,7 @@ w, h = pygame.display.get_surface().get_size()
 #music
 music = ["Assets/Music/opening.mp3","Assets/Music/cutscene.mp3","Assets/Music/battle.mp3"]
 pygame.mixer.music.load(music[0])
-#pygame.mixer.music.play(-1)
+pygame.mixer.music.play(-1)
 
 #status bars
 status_player = pygame.image.load("Assets/InGame/status_bunny.png").convert_alpha()
@@ -195,11 +195,13 @@ def switch_scene(scene):
 	which_scene = scene
 	pygame.mixer.music.load(music[which_scene])
 	pygame.mixer.music.play(-1)
-	bg[which_scene].fade_in(screen,10.0) #redraw background
+	bg[which_scene].fade_in(screen,7.0) #redraw background
 
-	# if which_scene == 1:
-	# 	dark_overlay.fade_in(screen,5.0)
-	#black.fade_out(screen,5.0)		
+	if which_scene == 1:
+		dark_overlay.draw(screen,(0,0))
+		pygame.display.update()
+		pygame.time.delay(3000)
+			#black.fade_out(screen,5.0)		
 
 #update the screen with the new changes, this will be called at the end part of the game loop
 def update_screen():
