@@ -170,10 +170,8 @@ class Sprite:
 
 		self.hidden = True
 		temp = pygame.Surface((self.image.get_width(), self.image.get_height())).convert()
-		temp.blit(screen,self.position)
-		temp.blit(self.image,(0,0))
 
-		while alpha < 200:
+		while alpha < 100:
 			for event in pygame.event.get():
 				#pressing 'x' on the window
 				if (event.type == QUIT):
@@ -184,8 +182,10 @@ class Sprite:
 			
 			if last_time != current_time:
 				alpha = math.ceil((elapsed_time/duration) * 255)
+				temp.blit(screen,(-self.position[0],-self.position[1]))
+				temp.blit(self.image,(0,0))
 				temp.set_alpha(alpha)	
-				print (math.ceil((elapsed_time/duration) * 255))
+				print (alpha)
 			screen.blit(temp,self.position)
 			last_time = current_time
 			pygame.display.update()
@@ -203,11 +203,10 @@ class Sprite:
 		alpha = 255
 
 		temp = pygame.Surface((self.image.get_width(), self.image.get_height())).convert()
-		temp.blit(screen,self.position)
+		temp.blit(screen,(-self.position[0],-self.position[1]))
 		temp.blit(self.image,(0,0))
-
 		self.hidden = True
-		while alpha > 50:
+		while alpha > 200:
 			for event in pygame.event.get():
 				#pressing 'x' on the window
 				if (event.type == QUIT):
@@ -221,7 +220,6 @@ class Sprite:
 				print (alpha)
 				temp.set_alpha(alpha)
 
-			screen.fill((0,0,0))
 			screen.blit(temp,self.position)
 			last_time = current_time
 			pygame.display.update()

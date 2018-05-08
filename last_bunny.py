@@ -10,20 +10,21 @@ from puzzle_grid import Puzzle_grid #puzzle_grid.py
 from character import Character #character.py
 from skills import * #has the skill definitions, ex. skill_1
 from sprites import *
+from dialogue import *
 import math
 import time
 
 #pygame setup
 pygame.init()
 pygame.display.set_caption("The Last Bunny")
-bg = [
-	pygame.image.load("Assets/opening.png"),
-	pygame.image.load("Assets/InGame/Level_1.png"),
-	pygame.image.load("Assets/InGame/Level_1.png")
+screen = pygame.display.set_mode((1280,720))#,pygame.FULLSCREEN
+bg = [ Sprite.image(pygame.image.load("Assets/opening.png").convert(),"bg_0"),
+	Sprite.image(pygame.image.load("Assets/Story/bg_1.png").convert(),"bg_1"),
+	Sprite.image(pygame.image.load("Assets/InGame/Level_1.png").convert(),"bg_2")
 ]
 
 
-screen = pygame.display.set_mode(bg[0].get_rect().size)#,pygame.FULLSCREEN
+
 w, h = pygame.display.get_surface().get_size()
 
 #-----LevelAssets-----
@@ -31,7 +32,7 @@ w, h = pygame.display.get_surface().get_size()
 #music
 music = ["Assets/Music/opening.mp3","Assets/Music/cutscene.mp3","Assets/Music/battle.mp3"]
 pygame.mixer.music.load(music[0])
-pygame.mixer.music.play(-1)
+#pygame.mixer.music.play(-1)
 
 #status bars
 status_player = pygame.image.load("Assets/InGame/status_bunny.png").convert_alpha()
@@ -75,7 +76,8 @@ opening_skel = Sprite.animation(opening_skel_animation,"openingSkeleton")
 opening_bclouds = Sprite.animation(opening_bclouds_animation,"blackClouds")
 play_button = Sprite.image(pygame.image.load("Assets/Opening/play_button.png").convert_alpha(),"play")
 quit_button = Sprite.image(pygame.image.load("Assets/Opening/quit_button.png").convert_alpha(),"quit")
-
+dark_overlay = Sprite.image(pygame.image.load("Assets/Story/dark_overlay.png"),"play")
+black = Sprite.image(pygame.image.load("Assets/black.png").convert(),"black")
 
 #Test. To Make sure functions are called just once in the loop.
 called1 = False
@@ -124,7 +126,7 @@ pygame.time.delay(2000)
 splash_screen = Sprite.image(pygame.image.load("Assets/splash_screen.png").convert(),"splash")
 splash_screen.fade_in(screen,5.0)
 can_splash = False
-splash_screen.fade_out(screen,2.0)
+black.fade_in(screen,5.0)
 
 #opening Animation
 opening_bright = Sprite.image(pygame.image.load("Assets/bright_sky.png").convert(),"bright")
@@ -132,7 +134,8 @@ opening_dark = Sprite.image(pygame.image.load("Assets/dark_sky.png").convert(),"
 opening = Sprite.image(pygame.image.load("Assets/opening.png").convert(),"opening")
 intro_bunny = Sprite.image(pygame.image.load("Assets/Opening/Bunny.png").convert_alpha(),"intro_bunny")
 
-end = pygame.time.get_ticks() + 3000 
+end = pygame.time.get_ticks() + 3000
+opening_bright.fade_in(screen,5.0) 
 while pygame.time.get_ticks() < end:
 	for event in pygame.event.get():
 		#pressing 'x' on the window
@@ -184,13 +187,30 @@ pygame.time.delay(3000)
 opening.fade_in(screen,5.0)
 
 
+def switch_scene(scene):
+	global which_scene
+	if which_scene == scene:
+		return
+	black.fade_in(screen,5.0)
+	which_scene = scene
+	pygame.mixer.music.load(music[which_scene])
+	pygame.mixer.music.play(-1)
+	bg[which_scene].fade_in(screen,10.0) #redraw background
+
+	# if which_scene == 1:
+	# 	dark_overlay.fade_in(screen,5.0)
+	#black.fade_out(screen,5.0)		
+
 #update the screen with the new changes, this will be called at the end part of the game loop
 def update_screen():
 	global can_splash
 	if which_scene == 0:
 		play_button.draw(screen,(450,315))
 		quit_button.draw(screen,(450,460))
-	if which_scene == 2:
+	elif which_scene == 1:
+		dark_overlay.draw(screen,(0,0))
+		dialogue.draw(screen)
+	elif which_scene == 2:
 		#update status bar UI for all characters
 		global main_bunny
 		global enemy_1
@@ -253,7 +273,7 @@ while (True):
 	#Draw UI
 	
 	#if Level 1
-	screen.blit(bg[which_scene] ,(0,0)) #redraw background
+	screen.blit(bg[which_scene].image ,(0,0)) #redraw background
 
 	#BattleMenu Assets
 
@@ -297,13 +317,15 @@ while (True):
 			#possible improvement: can make this cleaner by checking detection first for skill picking
 			#check if it's our turn and no one is currently doing an attack animation
 			if (event.button == 1):
-				if (play_button.rect.collidepoint(mouse_posx, mouse_posy)):
-					which_scene = 2
-					pygame.mixer.music.load(music[2])
-					pygame.mixer.music.play(-1)
-				elif (quit_button.rect.collidepoint(mouse_posx, mouse_posy)):
-					pygame.quit()
-					exit()
+				if (which_scene == 0):
+					if (play_button.rect.collidepoint(mouse_posx, mouse_posy)):
+						switch_scene(1)
+					elif (quit_button.rect.collidepoint(mouse_posx, mouse_posy)):
+						pygame.quit()
+						exit()
+				elif (which_scene == 1):
+					if dialogue.detect_click(mouse_posx,mouse_posy):
+						switch_scene(2)
 				if (active_character == main_bunny and someone_is_attacking == False and which_scene > 1):
 					#step 1: click on grid
 					if main_bunny.puzzle_grid.finished_grid_move == False:
