@@ -28,6 +28,7 @@ class Character:
 		self.status_bar_rect = None
 		self.targeted = False
 		self.targeted_status_image = None
+		self.feedback_message = ""
 
 		#for animations
 		self.location = location
@@ -43,7 +44,11 @@ class Character:
 		self.health = health
 		self.max_health = health
 		self.skill_list = [0, 0, 0, 0]
+		self.skill_costs = [0, 0, 0, 0]
 		self.load_skills()
+
+		#combat logic
+		self.avoid_debuff = False
 
 	#load universal UI for all characters
 	def load_assets(self):
@@ -65,10 +70,18 @@ class Character:
 	#these are the skills for main bunny, will be stored as an array of functions
 	def load_skills(self):
 		global skill_1, skill_2, skill_3, skill_4
+		global skill_1_cost, skill_2_cost, skill_3_cost, skill_4_cost
 		self.skill_list[0] = skill_1
 		self.skill_list[1] = skill_2
 		self.skill_list[2] = skill_3
 		self.skill_list[3] = skill_4
+
+		#costs right now are hard coded
+		self.skill_costs[0] = skill_1_cost
+		self.skill_costs[1] = skill_2_cost
+		self.skill_costs[2] = skill_3_cost
+		self.skill_costs[3] = skill_4_cost
+
 
 	def draw_skill_list(self):
 		#draw the skill list background
@@ -84,21 +97,35 @@ class Character:
 		text_pos_3 = (360, 575+37*2)
 		text_pos_4 = (360, 575+37*3)
 
+		not_enough_resource_color = (188, 81, 79)
+
 		#draw the skill icons and name
 		self.game_screen.blit(skill_icon_small_1 , icon_pos_1)
-		skill_text_1 = bit_8_font.render("AVOID", False, (255, 255, 255))
+		if (self.puzzle_grid.collected_shapes[0] >= self.skill_costs[0]):
+			skill_text_1 = bit_8_font.render("AVOID (" + str(self.skill_costs[0]) + ")", False, (255, 255, 255))
+		else:
+			skill_text_1 = bit_8_font.render("AVOID (" + str(self.skill_costs[0]) + ")", False, not_enough_resource_color)
 		self.game_screen.blit(skill_text_1, text_pos_1)
 
 		self.game_screen.blit(skill_icon_small_2 , icon_pos_2)
-		skill_text_2 = bit_8_font.render("BE CUTE", False, (255, 255, 255))
+		if (self.puzzle_grid.collected_shapes[1] >= self.skill_costs[1]):
+			skill_text_2 = bit_8_font.render("BE CUTE (" + str(self.skill_costs[1]) + ")", False, (255, 255, 255))
+		else:
+			skill_text_2 = bit_8_font.render("BE CUTE (" + str(self.skill_costs[1]) + ")", False, not_enough_resource_color)
 		self.game_screen.blit(skill_text_2, text_pos_2)
 
 		self.game_screen.blit(skill_icon_small_3 , icon_pos_3)
-		skill_text_3 = bit_8_font.render("SCRATCH", False, (255, 255, 255))
+		if (self.puzzle_grid.collected_shapes[2] >= self.skill_costs[2]):
+			skill_text_3 = bit_8_font.render("SCRATCH (" + str(self.skill_costs[2]) + ")", False, (255, 255, 255))
+		else:
+			skill_text_3 = bit_8_font.render("SCRATCH (" + str(self.skill_costs[2]) + ")", False, not_enough_resource_color)
 		self.game_screen.blit(skill_text_3, text_pos_3)
 
 		self.game_screen.blit(skill_icon_small_4 , icon_pos_4)
-		skill_text_4 = bit_8_font.render("RAGE!!!", False, (255, 255, 255))
+		if (self.puzzle_grid.collected_shapes[3] >= self.skill_costs[3]):
+			skill_text_4 = bit_8_font.render("RAGE!!! (" + str(self.skill_costs[3]) + " - max)", False, (255, 255, 255))
+		else:
+			skill_text_4 = bit_8_font.render("RAGE!!! (" + str(self.skill_costs[3]) + " - max)", False, not_enough_resource_color)
 		self.game_screen.blit(skill_text_4, text_pos_4)
 
 		#create collision box (can now click skill by its text)
@@ -113,8 +140,10 @@ class Character:
 		#check which skill was clicked
 		for i in range(len(self.skill_rects)):
 			if (self.skill_rects[i].collidepoint(mouse_posx, mouse_posy)):
-				return self.skill_list[i]
-				#self.start_attack(target, self.skill_list[i])
+				if (self.puzzle_grid.collected_shapes[i] >= self.skill_costs[i]):
+					return self.skill_list[i]
+				else:
+					self.feedback_message = "not enough resource, need " + str(self.skill_costs[i])
 
 		return None
 
@@ -167,6 +196,7 @@ class Character:
 
 	#starts the attack animation and sets up delay before applying skill's effects to target
 	def start_attack(self, target, skill):
+
 		#play the attack animation
 		self.sprite.play("attack", 1)
 		self.started_attack_anim = True
@@ -178,9 +208,12 @@ class Character:
 
 	#attack another player with a skill
 	def attack(self, target, skill):
+
 		#apply the effect of skill to target
 		skill_result = skill(self, target)
-		print (skill_result)
+
+		#tell user whats happening
+		self.feedback_message = skill_result
 		if (target.health <= 0):
 			print (target.name + " died")
 			target.sprite.play("die", 1)

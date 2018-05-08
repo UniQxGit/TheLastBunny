@@ -238,6 +238,9 @@ def update_screen():
 		#update the skill battle menu
 		main_bunny.draw_skill_list()
 
+		#update feedback message
+		feedback_message_UI()
+
 
 #turn taking
 turn_rotation = [main_bunny, enemy_1, enemy_2, enemy_3]
@@ -267,6 +270,14 @@ def pick_target (mouse_posx, mouse_posy):
 
 	if (found_target == False):
 		targeted_character = None
+
+#text in a box UI, give the user messages on their actions
+feedback_message = "hello"
+def feedback_message_UI():
+	global feedback_message
+
+	text_feedback = bit_8_font.render(feedback_message, False, (255, 255, 255))
+	screen.blit(text_feedback, (0, 0))
 
 
 # #game loop
@@ -305,6 +316,21 @@ while (True):
 	# 	#skeleton6.play("attack",3)
 	# 	called2 = True
 
+	#tell user current status
+	if (active_character == main_bunny and 
+		someone_is_attacking == False and 
+		which_scene > 1):
+
+		if (main_bunny.feedback_message != ""):
+			feedback_message = main_bunny.feedback_message
+		elif (main_bunny.puzzle_grid.finished_grid_move == False):
+			feedback_message = "pop a shape on the grid"
+		elif (targeted_character == None):
+			feedback_message = "pick a target"
+		elif (skill_picked == None):
+			feedback_message = "pick a skill"
+
+
 	#check user input
 	for event in pygame.event.get():
 		#pressing 'x' on the window
@@ -329,6 +355,8 @@ while (True):
 					if dialogue.detect_click(mouse_posx,mouse_posy):
 						switch_scene(2)
 				if (active_character == main_bunny and someone_is_attacking == False and which_scene > 1):
+					main_bunny.feedback_message = ""
+
 					#step 1: click on grid
 					if main_bunny.puzzle_grid.finished_grid_move == False:
 						puzzle_grid.detect_shape_click(mouse_posx, mouse_posy)
@@ -336,10 +364,12 @@ while (True):
 					#step 3: click skill
 					if targeted_character != None:
 						skill_picked = main_bunny.detect_skill_click(targeted_character, mouse_posx, mouse_posy)
+						feedback_message = main_bunny.feedback_message
 
 						#start attack
 						if (skill_picked != None):
 							main_bunny.start_attack(targeted_character, skill_picked)
+							feedback_message = "starting attack..."
 
 							#reset values
 							someone_is_attacking = True
@@ -380,11 +410,13 @@ while (True):
 		if (active_character.attack_delay_done(now)):
 			#apply skill/attack's effects
 			active_character.attack(active_character.current_target, active_character.current_action)
+			feedback_message = active_character.feedback_message
 
 			#next person's turn
 			rotation_counter += 1
 			active_character = turn_rotation[rotation_counter % character_num]
 			someone_is_attacking = False
+			main_bunny.feedback_message = ""
 	
 	#update screen
 	update_screen()

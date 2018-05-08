@@ -12,3 +12,4 @@ in pop_shapes: "RecursionError: maximum recursion depth exceeded while getting t
 	-rare case
 	-possible solutions: -use 'sys.setrecursionlimit(value)'
 						 -don't use recursion (use loops)
+	-i think the grid is clickable during the dialogue part, i had an instance when i'd start with 1 gem
