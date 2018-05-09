@@ -142,7 +142,7 @@ class Character:
 
 		self.game_screen.blit(skill_icon_small_4 , icon_pos_4)
 		if (self.puzzle_grid.collected_shapes[3] >= self.skill_costs[3]):
-			skill_text_4 = bit_8_font.render("RAGE!!! (4" + str(self.skill_costs[3]) + "- ALL)", False, (255, 255, 255))
+			skill_text_4 = bit_8_font.render("RAGE!!! (" + str(self.skill_costs[3]) + "- ALL)", False, (255, 255, 255))
 		else:
 			skill_text_4 = bit_8_font.render("RAGE!!! (" + str(self.skill_costs[3]) + "- ALL)", False, not_enough_resource_color)
 		self.game_screen.blit(skill_text_4, text_pos_4)

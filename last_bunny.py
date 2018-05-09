@@ -279,6 +279,22 @@ def feedback_message_UI():
 		y += word_height  # Start on new row.
 
 def reset_level():
+	global main_bunny, enemy_1, enemy_2, enemy_3
+	global turn_rotation, character_num, enemy_num, rotation_counter, active_character, someone_is_attacking, can_click_grid
+	global puzzle_grid, failed
+
+	#turn taking
+	turn_rotation = [main_bunny, enemy_1, enemy_2, enemy_3]
+	character_num = 4
+	enemy_num = 3
+	rotation_counter = 4
+	active_character = turn_rotation[rotation_counter % character_num] #this will go from 0 -> 4
+	someone_is_attacking = False
+	if (turn_rotation[0] == main_bunny):
+		can_click_grid = True
+	else:
+		can_click_grid = False
+
 	puzzle_grid.collected_shapes = [0,0,0,0]
 	for character in turn_rotation:
 		character.health = character.max_health
@@ -356,6 +372,7 @@ def update_screen(now):
 
 battle_skill_overlay.position = (-battle_skill_overlay.rect.w,-battle_skill_overlay.rect.h)
 
+#main_bunny.draw_skill_list() #quick fix to a bug, specific to my(andre) compute apparently
 # #game loop
 while (True):
 	start = time.time()

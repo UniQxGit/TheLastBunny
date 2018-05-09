@@ -27,7 +27,7 @@ def skill_3(attacker, target):
 	total_dmg = 10 + (1 * attacker.puzzle_grid.collected_shapes[2])
 
 	attacker.puzzle_grid.collected_shapes[2] -= skill_3_cost
-	target.health -= 10
+	target.health -= total_dmg
 	return attacker.name + " used scratch on " + target.name + ", it dealt " + str(total_dmg) + " damage"
 
 #needs minimum 4 greens. if more bunny will use it all. the more used the higher the damage
@@ -48,4 +48,4 @@ def AI_skill_1(attacker, target):
 		return attacker.name + "'s attack missed, " + target.name + " avoided it"
 
 	target.health -= 8
-	return attacker.name + " hit " + target.name + " with a sword, it dealt 14 damage"
+	return attacker.name + " hit " + target.name + " with a sword, it dealt 8 damage"
