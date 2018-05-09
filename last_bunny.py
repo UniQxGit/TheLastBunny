@@ -98,11 +98,11 @@ screen.fill((0,0,0))
 pygame.display.update()
 
 #create character (bunny)
-main_bunny = Character(screen, "The last bunny", puzzle_grid, 100, bunny, (415,230))
+main_bunny = Character(screen, "The last bunny", puzzle_grid, 100, bunny, (415-47,230-45))
 #create dummy enemy
-enemy_1 = Character(screen, "skeleton_1", None, 50, skeleton1, (180,370))
-enemy_2 = Character(screen, "skeleton_2", None, 50, skeleton2, (220,370))
-enemy_3 = Character(screen, "skeleton_3", None, 50, skeleton3, (240,370))
+enemy_1 = Character(screen, "skeleton_1", None, 50, skeleton1, (133,325))
+enemy_2 = Character(screen, "skeleton_2", None, 50, skeleton2, (157+7,355-10))
+enemy_3 = Character(screen, "skeleton_3", None, 50, skeleton3, (200,360))
 #setup specific UI
 main_bunny.setup_status_bar_UI(status_player, (350,7), bit_8_font, (460, 50), targeted_status_img)
 enemy_1.setup_status_bar_UI(status_enemy_skel, (0, 480), bit_8_font_status, (75, 520), targeted_status_img)
@@ -287,7 +287,7 @@ def reset_level():
 	failed = False
 
 #update the screen with the new changes, this will be called at the end part of the game loop
-def update_screen():
+def update_screen(now):
 	global can_splash,screen,targeted_character
 	if which_scene == 0:
 		play_button.draw(screen,(450,315))
@@ -304,7 +304,7 @@ def update_screen():
 		global failed
 		global turn_rotation
 		#Level
-		screen.blit(level,(133,175))
+		screen.blit(level,(133-47,175-45))
 
 		if targeted_character != None and targeted_character.health <= 0:
 			
@@ -349,8 +349,12 @@ def update_screen():
 
 		#update feedback message
 		feedback_message_UI()
+
+		main_bunny.draw_skill_effect(now)
 	elif which_scene == 3:
 		dialogue.draw(screen)
+
+battle_skill_overlay.position = (-battle_skill_overlay.rect.w,-battle_skill_overlay.rect.h)
 
 # #game loop
 while (True):
@@ -504,7 +508,7 @@ while (True):
 			main_bunny.feedback_message = ""
 	
 	#update screen
-	update_screen()
+	update_screen(now)
 
 	pygame.display.update()
 	end = time.time()
