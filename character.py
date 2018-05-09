@@ -46,6 +46,7 @@ class Character:
 		self.skill_list = [0, 0, 0, 0]
 		self.skill_costs = [0, 0, 0, 0]
 		self.load_skills()
+		self.initialized = False
 
 		#combat logic
 		self.avoid_debuff = False
@@ -133,10 +134,12 @@ class Character:
 		self.skill_rects[1] = pygame.Rect((285,560 + 38 * 1), (309,38))
 		self.skill_rects[2] = pygame.Rect((285,560 + 38 * 2), (309,38))
 		self.skill_rects[3] = pygame.Rect((285,560 + 38 * 3), (309,38))
+		self.initialized = True
 
 	#returns skill that was picked, returns None if no skill was picked
 	def detect_skill_click(self, target, mouse_posx, mouse_posy):
-
+		if self.initialized == False:
+			return None
 		#check which skill was clicked
 		for i in range(len(self.skill_rects)):
 			if (self.skill_rects[i].collidepoint(mouse_posx, mouse_posy)):

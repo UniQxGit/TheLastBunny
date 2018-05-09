@@ -20,7 +20,8 @@ pygame.display.set_caption("The Last Bunny")
 screen = pygame.display.set_mode((1280,720))#,pygame.FULLSCREEN)
 bg = [ Sprite.image(pygame.image.load("Assets/opening.png").convert(),"bg_0"),
 	Sprite.image(pygame.image.load("Assets/Story/bg_1.png").convert(),"bg_1"),
-	Sprite.image(pygame.image.load("Assets/InGame/Level_1.png").convert(),"bg_2")
+	Sprite.image(pygame.image.load("Assets/InGame/Level_1.png").convert(),"bg_2"),
+	Sprite.image(pygame.image.load("Assets/Story/bg_1.png").convert(),"bg_1")
 ]
 
 
@@ -30,7 +31,7 @@ w, h = pygame.display.get_surface().get_size()
 #-----LevelAssets-----
 
 #music
-music = ["Assets/Music/opening.mp3","Assets/Music/cutscene.mp3","Assets/Music/battle.mp3"]
+music = ["Assets/Music/opening.mp3","Assets/Music/cutscene.mp3","Assets/Music/battle.mp3","Assets/Music/cutscene.mp3"]
 pygame.mixer.music.load(music[0])
 pygame.mixer.music.play(-1)
 
@@ -187,65 +188,42 @@ pygame.time.delay(3000)
 
 opening.fade_in(screen,5.0)
 
-
 def switch_scene(scene):
 	global which_scene
 	if which_scene == scene:
 		return
+
 	black.fade_in(screen,5.0)
 	which_scene = scene
 	pygame.mixer.music.load(music[which_scene])
 	pygame.mixer.music.play(-1)
+	
 	bg[which_scene].fade_in(screen,7.0) #redraw background
 
 	if which_scene == 1:
+		dialogue.dialogue_counter = 0
+		dialogue.which_scenario = 0
 		dark_overlay.draw(screen,(0,0))
 		pygame.display.update()
 		pygame.time.delay(3000)
-			#black.fade_out(screen,5.0)		
-
-#update the screen with the new changes, this will be called at the end part of the game loop
-def update_screen():
-	global can_splash,screen
-	if which_scene == 0:
-		play_button.draw(screen,(450,315))
-		quit_button.draw(screen,(450,460))
-	elif which_scene == 1:
+			#black.fade_out(screen,5.0)	
+	if which_scene == 2:
+		reset_level()
+	if which_scene == 3:
+		dialogue.dialogue_counter = 0
+		dialogue.which_scenario = 1
 		dark_overlay.draw(screen,(0,0))
-		dialogue.draw(screen)
-	elif which_scene == 2:
-		#update status bar UI for all characters
-		global main_bunny
-		global enemy_1
-		global level 
-		#Level
-		screen.blit(level,(133,175))
+		pygame.display.update()
+		pygame.time.delay(3000)
 
-		main_bunny.draw_status_bar()
-		enemy_1.draw_status_bar()
-		enemy_2.draw_status_bar()
-		enemy_3.draw_status_bar()
 
-		#update the grid
-		global puzzle_grid
-		puzzle_grid.draw_grid(710,133)
-
-		#update the sprites
-		main_bunny.draw_character()
-		enemy_1.draw_character()
-		enemy_2.draw_character()
-		enemy_3.draw_character()
-		battle_skill_overlay.draw(screen,battle_skill_overlay.position)
-		#update the skill battle menu
-		main_bunny.draw_skill_list()
-
-		#update feedback message
-		feedback_message_UI()
 
 
 #turn taking
+failed = False
 turn_rotation = [main_bunny, enemy_1, enemy_2, enemy_3]
 character_num = 4
+enemy_num = 3
 rotation_counter = 4
 active_character = turn_rotation[rotation_counter % character_num] #this will go from 0 -> 4
 someone_is_attacking = False
@@ -256,21 +234,22 @@ else:
 
 #target picking
 skill_picked = None
-targeted_character = None
+targeted_character = enemy_1
+enemy_1.targeted = True
 def pick_target (mouse_posx, mouse_posy):
 	global turn_rotation, targeted_character
 	found_target = False
 
 	for character in turn_rotation:
 		if (character.status_bar_rect.collidepoint(mouse_posx, mouse_posy)):
+			targeted_character.targeted = False
 			character.targeted = True
 			targeted_character = character
 			found_target = True
-		else:
-			character.targeted = False
 
-	if (found_target == False):
-		targeted_character = None
+
+	# if (found_target == False):
+	# 	targeted_character = None
 
 #text in a box UI, give the user messages on their actions
 feedback_message = "hello"
@@ -299,7 +278,80 @@ def feedback_message_UI():
 		x = pos[0]  # Reset the x.
 		y += word_height  # Start on new row.
 
-	
+def reset_level():
+	puzzle_grid.collected_shapes = [0,0,0,0]
+	for character in turn_rotation:
+		character.health = character.max_health
+		character.return_to_default = True
+		character.sprite.play("idle",1)
+	failed = False
+
+#update the screen with the new changes, this will be called at the end part of the game loop
+def update_screen():
+	global can_splash,screen,targeted_character
+	if which_scene == 0:
+		play_button.draw(screen,(450,315))
+		quit_button.draw(screen,(450,460))
+	elif which_scene == 1:
+		dark_overlay.draw(screen,(0,0))
+		dialogue.draw(screen)
+	elif which_scene == 2:
+		#update status bar UI for all characters
+		global main_bunny
+		global enemy_1,enemy_2,enemy_3
+		global level 
+		global enemy_num
+		global failed
+		global turn_rotation
+		#Level
+		screen.blit(level,(133,175))
+
+		if targeted_character != None and targeted_character.health <= 0:
+			
+			targeted_character = None
+
+			for character in turn_rotation:
+				if character.health > 0 and character != main_bunny:
+					targeted_character = character
+					character.targeted = True
+					break
+
+			enemy_num = enemy_num - 1
+			if enemy_num <= 0:
+				switch_scene(3)
+
+		if main_bunny.health <= 0 and failed == False and main_bunny.sprite.is_playing == False:
+			pygame.time.delay(3000)
+			switch_scene(1)
+			failed = True
+
+
+		main_bunny.draw_status_bar()
+		if enemy_1.health > 0:
+			enemy_1.draw_status_bar()
+		if enemy_2.health > 0:
+			enemy_2.draw_status_bar()
+		if enemy_3.health > 0:
+			enemy_3.draw_status_bar()
+
+		#update the grid
+		global puzzle_grid
+		puzzle_grid.draw_grid(710,133)
+
+		#update the sprites
+		main_bunny.draw_character()
+		enemy_1.draw_character()
+		enemy_2.draw_character()
+		enemy_3.draw_character()
+		battle_skill_overlay.draw(screen,battle_skill_overlay.position)
+		#update the skill battle menu
+		main_bunny.draw_skill_list()
+
+		#update feedback message
+		feedback_message_UI()
+	elif which_scene == 3:
+		dialogue.draw(screen)
+
 # #game loop
 while (True):
 	start = time.time()
@@ -363,7 +415,7 @@ while (True):
 
 		if which_scene == 2:
 			battle_skill_overlay.position = (-battle_skill_overlay.rect.w,-battle_skill_overlay.rect.h)
-			if targeted_character != None:
+			if main_bunny.puzzle_grid.finished_grid_move != None:
 				for i in range(len(main_bunny.skill_rects)):
 					if (main_bunny.skill_rects[i].collidepoint(mouse_posx, mouse_posy)):
 						battle_skill_overlay.position = (main_bunny.skill_rects[i].x,main_bunny.skill_rects[i].y)
@@ -386,7 +438,10 @@ while (True):
 				elif (which_scene == 1):
 					if dialogue.detect_click(mouse_posx,mouse_posy):
 						switch_scene(2)
-				if (active_character == main_bunny and someone_is_attacking == False and which_scene > 1):
+				elif (which_scene == 3):
+					if dialogue.detect_click(mouse_posx,mouse_posy):
+						switch_scene(0)
+				if (active_character == main_bunny and someone_is_attacking == False and which_scene == 2):
 					main_bunny.feedback_message = ""
 
 					#step 1: click on grid
@@ -408,15 +463,13 @@ while (True):
 							skill_picked = None
 							main_bunny.puzzle_grid.finished_grid_move = False
 							main_bunny.puzzle_grid.disable_grid = False
-							#clear targeting
-							targeted_character.targeted = False
-							targeted_character = None
+							
 
 					#step 2: click target
 					if main_bunny.puzzle_grid.finished_grid_move == True and skill_picked == None:
 						pick_target(mouse_posx, mouse_posy)
 
-	if which_scene > 1:
+	if which_scene == 2:
 		#AI moves
 		if (active_character != main_bunny and someone_is_attacking == False):
 			if (active_character.health > 0):

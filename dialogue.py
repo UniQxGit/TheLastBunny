@@ -45,7 +45,8 @@ dialogue = Dialogue()
 #2 : BUNNYVILLE CIVILIANS
 #3 : Dying Civilian
 #4 : Skeleton
-
+#5 : ???
+#6 : Bunny's Friend
 scene_1 = [
 	(0,"(RUMBLE RUMBLE)"),
 	(1,"What's that?  ..Am I dreaming? What's happening to the sky?"),
@@ -70,9 +71,18 @@ scene_1 = [
 ]
 
 scene_2 = [
-	(0,"Yes"),
-	(1,"I agree."),
-	(0,"This is very interesting")
+	(4,"AAAAAGH!!!!!"),
+	(1,"(Huff.. Huff..) Its finally over.."),
+	(0,"(...)"),
+	(5,"(distant muffle...)"),
+	(5,"(hrm...!)"),
+	(6,"HEY!!!!"),
+	(6,"Wake up, class is over!"),
+	(1,"Man, .. that was all a dream..?"),
+	(0, "(RUMBLE  RUMBLE)"),
+	(4, "..hungry..."),
+	(4, "(Munch Munch)"),
+	(2,"*SCREEEAM!!!!!!*")
 ]
 
 dialogue.add_bubble(Sprite.image(pygame.image.load("Assets/Story/dialogue_empty.png"),""))
@@ -80,6 +90,8 @@ dialogue.add_bubble(Sprite.image(pygame.image.load("Assets/Story/dialogue_bunny_
 dialogue.add_bubble(Sprite.image(pygame.image.load("Assets/Story/dialogue_empty.png"),"BUNNYVILLE CIVILIANS"))
 dialogue.add_bubble(Sprite.image(pygame.image.load("Assets/Story/dialogue_empty.png"),"DYING CIVILIAN"))
 dialogue.add_bubble(Sprite.image(pygame.image.load("Assets/Story/dialogue_skel_bunny.png"),"SKELETON"))
+dialogue.add_bubble(Sprite.image(pygame.image.load("Assets/Story/dialogue_empty.png"),"???"))
+dialogue.add_bubble(Sprite.image(pygame.image.load("Assets/Story/dialogue_empty.png"),"Bunny's Friend"))
 
 dialogue.add_scenario(scene_1)
 dialogue.add_scenario(scene_2)
