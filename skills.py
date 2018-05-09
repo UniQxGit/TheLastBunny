@@ -20,6 +20,9 @@ def skill_2(attacker, target):
 
 	attacker.puzzle_grid.collected_shapes[1] -= skill_2_cost
 	attacker.health += heal_amt
+	if (attacker.health > attacker.max_health):
+		attacker.health = attacker.max_health
+
 	return attacker.name + " used his cuteness, somehow he healed for " + str(heal_amt)
 
 #deal 10 base damage. the more gems the bunny currently has, the more damage it does
@@ -28,6 +31,9 @@ def skill_3(attacker, target):
 
 	attacker.puzzle_grid.collected_shapes[2] -= skill_3_cost
 	target.health -= total_dmg
+	if (target.health < 0):
+		target.health = 0
+
 	return attacker.name + " used scratch on " + target.name + ", it dealt " + str(total_dmg) + " damage"
 
 #needs minimum 4 greens. if more bunny will use it all. the more used the higher the damage
@@ -37,6 +43,9 @@ def skill_4(attacker, target):
 
 	target.health -= total_dmg
 	attacker.puzzle_grid.collected_shapes[3] = 0
+	if (target.health < 0):
+		target.health = 0
+
 	return attacker.name + " used rage on " + target.name + ", it dealt " + str(total_dmg) + "  damage"
 
 #AI skills, returns what happened (string)
@@ -48,4 +57,7 @@ def AI_skill_1(attacker, target):
 		return attacker.name + "'s attack missed, " + target.name + " avoided it"
 
 	target.health -= 8
+	if (target.health < 0):
+		target.health = 0
+	
 	return attacker.name + " hit " + target.name + " with a sword, it dealt 8 damage"
