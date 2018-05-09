@@ -15,6 +15,13 @@ skill_icon_small_3 = None
 skill_icon_small_4 = None
 bit_8_font = None
 
+#skill effects
+avoid_fx = None
+heal_fx = None
+claw_fx = None
+rage_fx = None
+
+
 
 #character class
 class Character:
@@ -50,12 +57,14 @@ class Character:
 
 		#combat logic
 		self.avoid_debuff = False
+		self.skill_being_used = None
 
 	#load universal UI for all characters
 	def load_assets(self):
 		global battle_menu
 		global skill_icon_small_1, skill_icon_small_2, skill_icon_small_3, skill_icon_small_4
 		global bit_8_font
+		global avoid_fx, heal_fx, claw_fx, rage_fx
 
 		#load skill list background image
 		battle_menu = pygame.image.load("Assets/InGame/battle_menu.png").convert_alpha();
@@ -67,6 +76,13 @@ class Character:
 		skill_icon_small_4 = pygame.image.load("Assets/InGame/Skillicon_small_4.png").convert_alpha()
 		#load font for skill icon images (small)
 		bit_8_font = pygame.font.Font("Assets/Fonts/8_bit_pusab.ttf", 13)
+
+		#load skill effects
+		avoid_fx = pygame.image.load("Assets/InGame/avoid_fx.png").convert_alpha()
+		heal_fx = pygame.image.load("Assets/InGame/heal_fx.png").convert_alpha()
+		claw_fx = pygame.image.load("Assets/InGame/claw_fx.png").convert_alpha()
+		rage_fx = pygame.image.load("Assets/InGame/rage_fx.png").convert_alpha()
+
 
 	#these are the skills for main bunny, will be stored as an array of functions
 	def load_skills(self):
@@ -82,6 +98,8 @@ class Character:
 		self.skill_costs[1] = skill_2_cost
 		self.skill_costs[2] = skill_3_cost
 		self.skill_costs[3] = skill_4_cost
+
+
 
 
 	def draw_skill_list(self):
@@ -144,6 +162,7 @@ class Character:
 		for i in range(len(self.skill_rects)):
 			if (self.skill_rects[i].collidepoint(mouse_posx, mouse_posy)):
 				if (self.puzzle_grid.collected_shapes[i] >= self.skill_costs[i]):
+					self.skill_being_used = i
 					return self.skill_list[i]
 				else:
 					self.feedback_message = "not enough resource, need " + str(self.skill_costs[i])
@@ -181,6 +200,22 @@ class Character:
 
 		#create collision box for clicking (this is how enemies/allies will be targeted)
 		self.status_bar_rect = pygame.Rect((x_pos, y_pos), self.status_image.get_rect().size)
+
+	def draw_skill_effect(self, now):
+		if (self.started_attack_anim and not (now - self.time_started_attack >= self.attack_animation_time)):
+
+			char_pos = (50,50)
+
+			#play skill effect
+			if (self.skill_being_used == 0):
+				self.game_screen.blit(avoid_fx, char_pos)
+			elif (self.skill_being_used == 1):
+				self.game_screen.blit(heal_fx, char_pos)
+			elif (self.skill_being_used == 2):
+				self.game_screen.blit(claw_fx, char_pos)
+			elif (self.skill_being_used == 3):
+				self.game_screen.blit(rage_fx , char_pos)
+
 
 	#draw the sprite of the character on the screen
 	def draw_character(self):
