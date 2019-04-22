@@ -10,7 +10,7 @@ Aesthetics: Cute, bouncy aesthetics with dark storytelling
 
 
 How to run
-
+Please make sure that pygame and all its dependencies are installed before running. 
 ```
 python3 last_bunny.py
 ```
