@@ -438,7 +438,7 @@ while (True):
 			battle_skill_overlay.position = (-battle_skill_overlay.rect.w,-battle_skill_overlay.rect.h)
 			if main_bunny.puzzle_grid.finished_grid_move != None:
 				for i in range(len(main_bunny.skill_rects)):
-					if (main_bunny.skill_rects[i].collidepoint(mouse_posx, mouse_posy)):
+					if (main_bunny.skill_rects[i] and main_bunny.skill_rects[i].collidepoint(mouse_posx, mouse_posy)):
 						battle_skill_overlay.position = (main_bunny.skill_rects[i].x,main_bunny.skill_rects[i].y)
 
 
